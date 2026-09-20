@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef enum {
+    Q0,
+    Q1,
+    Q25,
+    Q3,
+    Q4,
+    QTRAP
+} State;
+
+State transition(State current, char c) {
+    switch (current) {
+
+        case Q0:
+            if (c == '/')
+                return Q1;
+            return QTRAP;
+
+        case Q1:
+            if (c == '*')
+                return Q25;
+            return QTRAP;
+
+        case Q25:
+            if (c == '/' || c == 'a')
+                return Q25;
+            if (c == '*')
+                return Q3;
+            return QTRAP;
+
+        case Q3:
+            if (c == '/')
+                return Q4;
+            if (c == '*')
+                return Q3;
+            if (c == 'a')
+                return Q25;
+            return QTRAP;
+
+        case Q4:
+            return QTRAP;
+
+        case QTRAP:
+            return QTRAP;
+    }
+
+    return QTRAP;
+}
+
+bool run_dfa(const char *input) {
+    State current = Q0;
+
+    for (int i = 0; input[i] != '\0'; i++) {
+        current = transition(current, input[i]);
+    }
+
+    return current == Q4;
+}
+
+int main() {
+
+    const char *test_cases[] = {
+        "/*a*/",
+        "/**/",
+        "/***/",
+        "/*a*a*/",
+        "/*a/a*/",
+        "/**",
+        "/*/",
+        "/**/a",
+        "//aaaa"
+    };
+
+    int num_tests = sizeof(test_cases) / sizeof(test_cases[0]);
+
+    printf("=== EXAMPLE 1: MINIMIZED DFA ===\n\n");
+
+    for (int i = 0; i < num_tests; i++) {
+
+        bool result = run_dfa(test_cases[i]);
+
+        printf("Input: %-12s Result: %s\n",
+               test_cases[i],
+               result ? "ACCEPT" : "REJECT");
+    }
+
+    return 0;
+}
